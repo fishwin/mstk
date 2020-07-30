@@ -32,13 +32,13 @@ docker 仓库就是存放docker镜像文件的场所。
 
 ### 7. dockerfile 常见的指令
 
-FROM：指定基础镜像
+**FROM**：指定基础镜像
 
-LABEL：为镜像指定标签
+**LABEL**：为镜像指定标签
 
-RUN：运行指定的指令（编译镜像时）
+**RUN**：运行指定的指令（编译镜像时）
 
-CMD：容器启动要执行的命令（容器启动时）
+**CMD**：容器启动要执行的命令（容器启动时）
 
 ### 8. COPY与ADD的区别
 
@@ -46,19 +46,19 @@ COPY和ADD的唯一区别是ADD支持从远程URL获取资源，COPY只能从doc
 
 ### 9. docker常用命令
 
-docker pull 从docker仓库拉取镜像
+**docker pull** 从docker仓库拉取镜像
 
-docker push 推送本地镜像到docker仓库
+**docker push** 推送本地镜像到docker仓库
 
-docker rm 删除容器
+**docker rm** 删除容器
 
-docker rmi 删除本地镜像
+**docker rmi** 删除本地镜像
 
-docker images 列出本地所有镜像
+**docker images** 列出本地所有镜像
 
-docker ps 列出所有容器
+**docker ps** 列出所有容器
 
-docker cp 从容器拷贝资源到宿主机或从宿主机拷贝资源到容器
+**docker cp** 从容器拷贝资源到宿主机或从宿主机拷贝资源到容器
 
 
 

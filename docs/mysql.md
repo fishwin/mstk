@@ -49,8 +49,8 @@
 B+树结构：
 
    			1. 每个节点有n个key，同时有n个子树
-   			2. 非叶子结点只用做索引，不保存数据，叶子结点保存数据（把结点大小设置为磁盘页大小（4K），利于磁盘读写，减少IO消耗）
-   			3. 叶子结点形成链表 （利于范围查找）
+      			2. 非叶子结点只用做索引，不保存数据，叶子结点保存数据（把结点大小设置为磁盘页大小（4K），利于磁盘读写，减少IO消耗）
+         			3. 叶子结点形成链表 （利于范围查找）
 
 为什么不用B树？
 
@@ -61,13 +61,3 @@ B+树结构：
 为什么不用哈希表？
 
 1. 哈希表对于单个数据的增删改查时间复杂度是O(1)，但是不利于范围查找，会导致全表扫描
-
-### 3. Mysql dump
-```
-$ mysqldump -h 10.60.82.110 -uroot -proot --column-statistics=0 --databases benben wallet > sqlfile.sql
-$ mysql -h 10.60.81.69 -p3306 -uskill -p < sqlfile.sql
-```
-
-```
-GRANT SElECT ON *.* TO 'readonly'@'%' IDENTIFIED BY "CWh4S(*VErCP";
-```

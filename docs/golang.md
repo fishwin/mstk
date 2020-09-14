@@ -25,7 +25,7 @@
 
 流程图如下：
 
-![gc](/Users/baldwin/workdir/go/src/mstk/images/gc.png)
+![gc](../images/gc.png)
 
 参考：
 

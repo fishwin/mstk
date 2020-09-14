@@ -45,6 +45,12 @@ http://yangxikun.github.io/golang/2019/12/22/golang-gc.html
 
 
 
+参考：
+
+https://tonybai.com/2020/03/21/illustrated-tales-of-go-runtime-scheduler/
+
+https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-goroutine/
+
 ### 4. Slice与数组区别，Slice底层结构及实现原理
 
 

@@ -41,15 +41,71 @@ https://www.jianshu.com/p/e20aaa039229
 
 http://yangxikun.github.io/golang/2019/12/22/golang-gc.html
 
-### 3. Go调度器原理，用了什么系统调用
+### 3. Go调度器原理
 
++ GPM模型  
 
+  一个G对应一个goroutine
+
+  一个P对应一个逻辑处理器，并维护一个G的本地运行队列，数量与GOMAXPROCS数量一致，指最大并行数
+
+  一个M对应一个内核线程，数量不固定，由go运行时指定，默认设置为最大10000.
+
+  gorutine 与 内核线程 N:M映射
+
++ 全局运行队列
+
+  go运行时会维护一个G的全局运行队列，p会在一定条件下，来全局运行队列中拿G放到自己的本地运行队列中。全局运行队列会使用mutex来控制多个p的并发访问。
+
+  全局运行对列使用mutex来实现多个p的并发访问，由于锁的竞争太严重，所以每个p中引入了本地运行队列，以减少锁的竞争。
+
++ 本地运行队列
+
+  每一个p都会维护一个G的本地运行队列，p会不断的在本地运行队列中取出G挂载到内核线程上去运行。当通过 `go` 关键字创建一个新的 goroutine 的时候，它会优先被放入 P 的本地队列。
+
++ netpoll（网络轮询器）
+
+  比如select/poll/epoll等IO多路复用，goroutine将被挂起，直到IO事件触发，这是将goroutine重新放回运行队列中。
+
++ 调度过程
+
+  p首先检查**本地运行队列**，如果本地运行队列为空，首先会去检查**全局运行队列**（需要加锁），如果全局运行队列也为空，然后去检查**网络轮询器**(network poller)中是否有IO事件被触发，如果还没有，这时会进行”**窃取**“，即去其他p的本地运行队列中拿一部分G放到自己的本地运行队列中。
+
++ sysmon
+
+  go程序在启动时，会启动一个sysmon（系统监视器）的m，这个m无须与p绑定即可运行，每20us~10ms启动一次,它完成的工作主要有：
+
+  - 释放闲置超过5分钟的span物理内存；
+  - 如果超过2分钟没有**垃圾回收**，强制执行；
+  - 将长时间未处理的netpoll结果添加到任务队列；
+  - 向长时间运行的G任务发出**抢占调度**；
+  - 收回因syscall长时间阻塞的P；
+
++ 抢占式调度
+
+  当某个goroutine执行超过10ms，sysmon会向其发起抢占调度请求，goroutine调度没有时间片的概念，通过设置标记来进行抢占式操作。
+
+  基于协作的抢占式调度器 - 1.2 ~ 1.13
+
+  基于信号的抢占式调度器 - 1.14 ~ 至今
+
++ channel
+
+  试图写入或读取channel而被阻塞的gorutine会被阻塞到channel中的sendq或recvq（写/读队列中），不会放到全局运行队列，或者p的本地运行队列中
+
++ 总结
+
+  goroutine的调度不需要让 CPU **在用户态和内核态之间切换**，这种实现方式相比内核级线程可以做的很轻量级，对系统资源的消耗会小很多
+
+![](../images/goroutine.png)
 
 参考：
 
 https://tonybai.com/2020/03/21/illustrated-tales-of-go-runtime-scheduler/
 
-https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-goroutine/
+https://tonybai.com/2017/06/23/an-intro-about-goroutine-scheduler/
+
+https://wudaijun.com/2018/01/go-scheduler/
 
 ### 4. Slice与数组区别，Slice底层结构及实现原理
 

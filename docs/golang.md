@@ -107,9 +107,126 @@ https://tonybai.com/2017/06/23/an-intro-about-goroutine-scheduler/
 
 https://wudaijun.com/2018/01/go-scheduler/
 
-### 4. Slice与数组区别，Slice底层结构及实现原理
+### 4. Slice底层结构及实现原理
 
+```go
+// runtime/slice.go
+type slice struct {
+    array unsafe.Pointer // 元素指针（底层数组）
+    len   int // 长度 
+    cap   int // 容量
+}
+```
 
++ 切片长度
+
+  切片长度是切片引用的元素数目
+
++ 切片容量
+
+  容量是底层数组的长度
+
++ slice作为参数传递
+
+  当slice类型作为函数参数传递时，是以slice结构进行值拷贝进行传递（64位机器上为24个字节，32位机器上为12个字节），由于扩容时底层数组可能变化，即array指针地址会变，所以函数中如果有调用append函数对切片扩容，那么应传递切片指针作为参数。如：
+
+  ```go
+  func appendSlice(s *[]int) {
+  	for i := 0; i < 1000; i ++ {
+  		*s = append(*s, i)
+  	}
+  }
+  ```
+
++ 扩容机制
+
+  当切片容量小于1024时，则每次扩容2倍，当大于等于1024时，每次扩容上次的四分之一。扩容过程中底层数组可能发生变化。
+
++ nil 切片
+
+  var slice1 []int   slice1 与 nil 比较结果为true，json.Marshal结果为null
+
++ 空切片
+
+  slice2 := make([]int,0)   slice2 与 nil比较结果为false，json.Marshal结果为[]
+
++ 切片的切片操作
+
+  切片操作并不复制切片指向的元素。它创建一个新的切片并复用原来切片的底层数组。 因此，通过一个新切片修改元素会影响到原始切片的对应元素。如下：
+
+```go
+func doAppend(a []int) {
+	_ = append(a, 0)
+}
+
+func main() {
+	s := []int{1,2,3,4,5,6,7,8,9}
+	s2 := s[2:5]
+	fmt.Println(s) // 输出 [1 2 3 4 5 6 7 8 9]
+	fmt.Println(s2) // 输出 [3 4 5]
+	s2[0] = 88
+	s2[1] = 88
+	s2[2] = 88
+	fmt.Println(s) // 输出 [1 2 88 88 88 6 7 8 9]
+	fmt.Println(s2) // 输出 [88 88 88]
+    
+	a := []int{1, 2, 3, 4, 5}
+	doAppend(a[0:2]) // 未指定容量，由于切片操作复用原底层数组，所以append操作会直接修改原底层数组上的值
+	fmt.Println(a) // 输出 [1 2 0 4 5]
+
+	b := []int{1,2,3,4,5}
+	doAppend(b[0:2:2]) // 指定容量，在append时，发现容量不足，则需要扩容，不会修改原底层数组上的值
+	fmt.Println(b) // 输出 [1 2 3 4 5]
+}
+```
+
++ copy 函数 func copy(dst, src []Type) int
+
+  copy函数是值拷贝，新的拷贝切片修改不会影响旧切片
+
+  copy函数返回值是拷贝的字节数，等于min(len(src),len(dst))，如果dst拷贝前有值则被覆盖。
+
++ slice常用操作
+
+  ```go
+  //删除
+  func remove(slice []interface{}, i int) []interface{} {
+      return append(slice[:i], slice[i+1:]...)
+  }
+  
+  //插入
+  func insert(slice *[]interface{}, index int, value interface{}) {
+      rear := append([]interface{}{}, (*slice)[index:]...)
+      *slice = append(append((*slice)[:index], value), rear...)
+  }
+  
+  //清空slice
+  func empty(slice *[]interface{}) {
+      //    *slice = nil
+      *slice = append([]interface{}{})
+  }
+  ```
+
++ range
+
+  使用range遍历切片，拿到的value时切片元素的值拷贝
+
++ 在循环中可使用s[0:0]复用切片，而不需要每次循环重新申请新的切片
+
+  ```go
+  func main() {
+  	var s []int
+  	for i := 0 ;i < 10; i++ {
+  		if s != nil {
+  			s = s[0:0] // 这里可以复用切片，否则就需要每一次循环都需要重新申请一个新的slice
+  		}
+  		for j := i; j < 10; j ++ {
+  			s = append(s, j)
+  		}
+  		fmt.Println(s)
+  	}
+  }
+  ```
 
 ### 5. Map 实现原理
 

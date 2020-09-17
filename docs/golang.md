@@ -299,6 +299,16 @@ https://juejin.im/post/6844903940866179079#heading-3
 
 https://juejin.im/post/6844904078636482574#heading-15
 
+### 6. init 函数执行顺序
+
+- 在同一个go文件中，可以定义多个init方法，按照在代码中编写的顺序依次执行不同的init方法
+- 在同一个package中，可以多个文件中定义init方法，不同文件中的init方法的执行`按照文件名先后`执行各个文件中的init方法
+- 对不同package，如果没有依赖关系，则按照main包中import的顺序执行init()，如果存在依赖关系，则最早被依赖的包最早执行init()
+
+下图为常量、全局变量、init函数、main函数的执行顺序图，main函数最后执行：
+
+![](../images/run_order.png)
+
 ### 6. Sync.Map 实现原理
 
 
@@ -399,7 +409,7 @@ https://juejin.im/post/6844904078636482574#heading-15
 
 
 
-### 31 init 函数执行顺序
+### 
 
 
 

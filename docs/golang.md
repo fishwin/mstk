@@ -230,7 +230,74 @@ func main() {
 
 ### 5. Map 实现原理
 
+hash函数往往存在输入范围大于输出范围的问题，所以会出现哈希冲突（哈希碰撞的问题），通常有以下解决方法
 
++ 哈希冲突（哈希碰撞）
+
+  1. 开放寻址
+
+  ![](../images/kfxz.png)
+
+  如上图，写如key3时，当hash函数命中key1时，就要线性往后查找第一个为空的位置，并存储key3。读取keys时，hash函数命中key1，此时就需要往后线性查找key3，直到找到或遇到空。
+
+  2. 拉链法（golang map使用拉链法解决hash冲突）
+
+     链表的数组
+
+  ![](../images/lalianfa.png)
+
+  如上图，key11经过hash函数命中2的位置，然后依次**遍历此桶中的链表**，如果找到key11，则对其进行更新操作，否则将key11添加到链表尾部。
+
+  3. 再hash法
+
+     当发生冲突时，使用第二个、第三个、哈希函数计算地址，直到无冲突。
+
++ golang map数据结构
+
+  golang map的底层实现是哈希表，并采用拉链法解决哈希冲突
+
+  ```go
+  type hmap struct {
+  	count     int  // 记录当前hash表元素数量
+  	flags     uint8
+            B         uint8 // 记录当前hash表中buckets的数量，由于hash表每次扩容2倍，所以存储的是对数形式，2^B = len(buckets)
+  	noverflow uint16
+  	hash0     uint32  // 传入hash函数，hash计算时使用
+  
+  	buckets    unsafe.Pointer
+  	oldbuckets unsafe.Pointer // 用于hash扩容时，保存之前的buckets
+  	nevacuate  uintptr
+  
+            extra *mapextra // 保存溢出数据的桶，数量是2 ^ (B-4)
+  }
+  ```
+
+  ![](../images/hmap.png)
+
++ hash表扩容
+
+  当hash表中的元素越来越多时，hash冲突的概率就会越来越高，hash表中桶的链表会越来越长，导致遍历链表耗时变长，这时就需要hash表扩容，一般每次扩容两倍。
+
+  + 渐进式rehash
+
+    map在rehash时，和redis一样采用渐进式rehash，使用oldbuckets字段保存旧的hash表，不一次性迁移完所有的buckets，而是把key的迁移分摊到每次的插入和删除操作中，在全部迁移完成后，释放oldbuckets。
+
+  + 读取数据
+
+    在扩容期间会发生读oldbuckets的情况，如果oldbuckets还未迁移完成则读oldbuckets
+
+  + 触发扩容时机
+
+    1. 装载因子大于6.5（即每个桶平均存储6.5个key，通常每个桶最大为8）（装载因子：元素数量/桶数量）
+    2. 哈希使用了太多的溢出桶（当hash冲突数超过桶最大数量时，会存储在溢出桶中，并形成一个链表）
+
+参考：
+
+https://juejin.im/entry/6844903793927143438
+
+https://juejin.im/post/6844903940866179079#heading-3
+
+https://juejin.im/post/6844904078636482574#heading-15
 
 ### 6. Sync.Map 实现原理
 

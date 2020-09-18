@@ -309,6 +309,20 @@ https://juejin.im/post/6844904078636482574#heading-15
 
 ![](../images/run_order.png)
 
+
+
+### 7. new和make区别
+
++ new(T)返回T类型的指针，make(T)返回T类型
++ new只分配内存，make分配内存并初始化
++ new可用于任意类型，make仅用于slice、channel、map
+
+### 8. nil可与哪些类型比较？
+
++ 引用类型：channel、slice、map、接口、函数、指针
+
+只有引用类型才可以与nil进行比较
+
 ### 6. Sync.Map 实现原理
 
 
@@ -393,10 +407,6 @@ https://juejin.im/post/6844904078636482574#heading-15
 
 
 
-### 27. go的new和make区别
-
-
-
 ### 28. go怎么从源码编译到二进制文件
 
 
@@ -408,8 +418,6 @@ https://juejin.im/post/6844904078636482574#heading-15
 ### 30. *Go语言局部变量分配在栈还是堆？*
 
 
-
-### 
 
 
 

@@ -323,11 +323,61 @@ https://juejin.im/post/6844904078636482574#heading-15
 
 只有引用类型才可以与nil进行比较
 
-### 6. Sync.Map 实现原理
+### 9. Sync.Map 实现原理
 
+数据结构
 
+```go
+type Map struct {
+    //互斥锁，用于锁定dirty map
+    mu Mutex    
+    
+    //优先读map,支持原子操作，注释中有readOnly不是说read是只读，而是它的结构体。read实际上有写的操作
+    read atomic.Value 
+    
+    // dirty是一个当前最新的map，允许读写
+    dirty map[interface{}]*entry 
+    
+    // 主要记录read读取不到数据加锁读取read map以及dirty map的次数，当misses等于dirty的长度时，会将dirty复制到read
+    misses int 
+}
 
-### 7. Chanel 底层原理
+// readOnly 主要用于存储，通过原子操作存储在 Map.read 中元素。
+type readOnly struct {
+    // read的map, 用于存储所有read数据
+    m       map[interface{}]*entry
+    
+    // 如果数据在dirty中但没有在read中，该值为true,作为修改标识
+    amended bool 
+}
+
+// entry 为 Map.dirty 的具体map值
+type entry struct {
+    // nil: 表示为被删除，调用Delete()可以将read map中的元素置为nil
+    // expunged: 也是表示被删除，但是该键只在read而没有在dirty中，这种情况出现在将read复制到dirty中，即复制的过程会先将nil标记为expunged，然后不将其复制到dirty
+    //  其他: 表示存着真正的数据
+    p unsafe.Pointer // *interface{}
+}
+```
+
+逻辑流程图
+
+![](../images/sync_map.jpeg)
+
+`sync.Map` 的实现原理可概括为：
+
+- 两个map一个read一个dirty
+- 读取时优先从read map中读取，如果读取不到则去dirty map中读取（dirty map中也不一定存在），并记录miss次数，如果miss次数等于dirty map 长度，则将dirty map的数据覆盖read map的数据（dirty map 提升为read map），同时dirty map置空，miss次数置0。
+- 写入数据时，如果read map中存在写入键，则直接更新read map中的键值。如果不存在，则去检查dirty map中是否存在，如果存在则更新，如果不存在，则写入dirtymap，如果这时dirty map为nil，会将read map中的数据复制到dirtymap
+- 注意read map也会有写操作（不会加锁），并不是只读。
+- 如果dirty map和read map中含有相同的key，那么修改其中一个map中这个key的值，另一个map中这个key的值也会发生变化，因为value存的是指针。
+- 对于删除数据则直接通过标记来延迟删除
+
+参考：
+
+https://juejin.im/post/6844904100287496206
+
+### 10. Chanel 底层原理
 
 
 

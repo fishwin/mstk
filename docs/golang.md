@@ -379,7 +379,118 @@ https://juejin.im/post/6844904100287496206
 
 ### 10. Chanel 底层原理
 
++ 数据结构
 
+  ```go
+  type hchan struct {
+  	qcount   uint           // 循环队列中的元素数量
+  	dataqsiz uint           // 循环队列的长度
+  	buf      unsafe.Pointer // 指向循环队列（循环数组）的指针，只针对有缓冲的channel
+  	elemsize uint16     // 元素大小
+  	closed   uint32       // channel是否关闭的标志
+  	elemtype *_type // 元素类型
+  	sendx    uint   // 记录循环队列中发送操作处理到的位置（索引）
+  	recvx    uint   // 记录循环队列中接收操作处理到的位置（索引）
+  	recvq    waitq  // 存储了当前channel读阻塞的goroutine列表（双向链表）
+  	sendq    waitq  // 存储了当前channel写阻塞的goroutine列表（双向链表）
+  	lock mutex  // 互斥所，保护channel中所有字段，还有一些阻塞在当前channel上sudogs中的一些字段
+  }
+  
+  type waitq struct {
+  	first *sudog  // 指向双向链表第一个节点
+  	last  *sudog // 指向双向链表最后一个节点
+  }
+  
+  //  sudog代表一个在等待队列中的goroutine
+  type sudog struct {
+  	g *g
+  
+  	next *sudog  // 双向链表后指针
+  	prev *sudog // 双向链表前指针
+  	elem unsafe.Pointer // data element (may point to stack)
+  
+  	acquiretime int64
+  	releasetime int64
+  	ticket      uint32
+      
+  	isSelect bool
+  
+  	parent   *sudog // semaRoot binary tree
+  	waitlink *sudog // g.waiting list or semaRoot
+  	waittail *sudog // semaRoot
+  	c        *hchan // channel
+  }
+  ```
+
+  循环队列（数组）+ 双向链表（读阻塞）+双向链表（写阻塞）
+
++ 为什么channel是引用类型
+
+  在编译阶段，make(chan int, 10)中的make函数会被转换为runtime.makechan或runtime.makechan64函数，同时，返回一个hchan结构体的指针。
+
++ 写channel或者读channel为什么是线程安全的
+
+  在写channel或读channel时，都会使用hchan结构体中的lock进行并发控制（加锁）
+
++ 写channel过程
+
+  1. 首先使用hchan.lock对结构体加锁
+  2. 将数据从goroutine拷贝到hchan.buf即循环队列中
+  3. 释放锁
+
++ 读channel过程
+
+  1. 首先使用hchan.lock对结构体加锁
+  2. 将数据hchan.buf中的头元素，拷贝到goroutine中
+  3. 释放锁
+
++ G1写一个缓冲区为3的channel过程中，缓冲区被写满之后，再次写入发生了什么
+
+  1. channel调用go调度器(gopark函数)，让G1等待，并且G1让出M，让其他goroutine运行。
+  2. 同时G1会被抽象为sudog结构体保存到channel中的sendq队列中，等待被唤醒
+  3. 当有其他goroutine读channel时，这时channel就会将sendq中的G1推出，调用go调度器（goready函数），将G1放入到P的运行队列中，等待被调度运行。
+
++ G2读一个缓冲区为3的channel时，缓冲区无数据，是如何进入阻塞和被唤醒的
+
+  1. 当G2读取channel时，发现channel中无数据，channel会调用go调度器(gopark函数)，使G2等待，G2让出M，让其他goroutine运行
+  2. 同时G2会被抽象为sudog结构体并保存在channel中的recvq队列中，等待被唤醒
+  3. 当有其他goroutine向channel写入数据后，此时channel会将G2从recvq中推出G2，并调用go调度器（goready函数），将G2放到P的运行队列中，等待被调度运行。
+
++ 注意
+
+  1. 向已经关闭的channel写入数据，会panic
+  2. 关闭已经关闭的channel会panic
+  3. range channel时，如果channel不被close，会一直阻塞
+
++ 判断channel关闭
+
+  ```go
+  //  一般用法
+  _, ok := <-ch
+  if !ok {
+  	fmt.Println("closed 1")
+  }
+  
+  // 通过偏移
+  func isChanClosed(ch interface{}) bool {
+  	cptr := *(*uintptr)(unsafe.Pointer(
+  		unsafe.Pointer(uintptr(unsafe.Pointer(&ch)) + unsafe.Sizeof(uint(0))),
+  	))
+  
+  	cptr += unsafe.Sizeof(uint(0))*2
+  	cptr += unsafe.Sizeof(unsafe.Pointer(uintptr(0)))
+  	cptr += unsafe.Sizeof(uint16(0))
+  	return *(*uint32)(unsafe.Pointer(cptr)) > 0
+  }
+  ```
+
+参考：
+
+https://juejin.im/post/6844903821349502990
+
+https://learnku.com/articles/32142
+
+https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/
 
 ### 8. Defer 常见坑
 

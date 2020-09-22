@@ -492,9 +492,172 @@ https://learnku.com/articles/32142
 
 https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/
 
-### 8. Defer 常见坑
+### 8. defer 
 
++ 数据结构
 
+  ```go
+  type _defer struct {
+  	siz     int32
+  	started bool
+  	sp      uintptr
+  	pc      uintptr
+  	fn      *funcval
+  	_panic  *_panic
+  	link    *_defer  // 链表指针
+  }
+  ```
+
+  
+
+  多个defer会形成一个链表，后面声明的defer会放到链表的头部,运行时，从前向后运行。
+
+![](/home/baldwin/workdir/go/src/mstk/images/defer.png)
+
++ defer 一般用于资源释放，如下
+
+```go
+f,err := os.Open(filename)
+if err != nil {
+    panic(err)
+}
+defer f.Close()
+```
+
++ 多个defer，执行顺序类似于栈（后进先出），下面的先执行
+
++ defer 与 return的执行顺序
+
+  1. 返回值=x
+  2. 执行defer语句
+  3. 空的return
+
+  如以下几个例子
+
+  ```go
+  // 例1
+  func f() (result int) {
+      defer func() {
+          result++
+      }()
+      return 0
+  }
+  
+  // 可改写为
+  func f() (result int) {
+      result = 0
+      defer func() {
+          result++
+      }()
+      return
+  }
+  // 所以例1返回1
+  
+  //============================================================
+  
+  // 例2
+  func f() (r int) {
+       t := 5
+       defer func() {
+         t = t + 5
+       }()
+       return t
+  }
+  // 可改写为
+  func f() (r int) {
+       t := 5
+       r = t
+       defer func() {
+         t = t + 5
+       }()
+       return
+  }
+  // 因为t赋值给r后，defer语句中并不会改变r的值，所以返回5
+  
+  //============================================================
+  
+  // 例3
+  func f() (r int) {
+      defer func(r int) {
+            r = r + 5
+      }(r)
+      return 1
+  }
+  // 可改写为
+  func f() (r int) {
+      r = 1
+      defer func(r int) {
+            r = r + 5
+      }(r)
+      return
+  }
+  // 因为r被赋值为1后，defer语句是用的是r的拷贝（值传递），所以r的值不会发生变化，返回值为1
+  
+  ```
+
++ 被deferred的函数的参数在defer时确定
+
+  
+
+  ```go
+  // 以下函数目的是计算函数执行时间，但是这么写达不到目的
+  func foo() {
+  	t0 := time.Now()
+  	defer fmt.Println(time.Now().Sub(t0))
+  	
+  	for i := 0; i < 100; i++ {
+  		fmt.Println(i)
+  	}
+  }
+  
+  // 可改为
+  func foo() {
+  	t0 := time.Now()
+  	defer func() {
+  		fmt.Println(time.Now().Sub(t0))
+  	}()
+  
+  	for i := 0; i < 100; i++ {
+  		fmt.Println(i)
+  	}
+  }
+  // =====================================================================
+  // 以下函数输出0，而不是1，因为defer时已经确定参数i=0，后面不会发生改变
+  func a() {
+      i := 0
+      defer fmt.Println(i)
+      i++
+      return
+  }
+  ```
+
++ defer不是退出代码块时执行，而是当前函数return之前运行
+
+  ```go
+  func main() {
+      {
+          defer fmt.Println("defer runs")
+          fmt.Println("block ends")
+      }
+      
+      fmt.Println("main ends")
+  }
+  
+  // 输出
+  // block ends
+  // main ends
+  // defer runs
+  ```
+
+  
+
+参考：
+
+https://tiancaiamao.gitbooks.io/go-internals/content/zh/03.4.html
+
+https://sanyuesha.com/2017/07/23/go-defer/
+
+https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-defer/
 
 ### 9. select， *select是随机的还是顺序的？*
 

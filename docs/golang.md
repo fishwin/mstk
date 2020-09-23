@@ -659,9 +659,17 @@ https://sanyuesha.com/2017/07/23/go-defer/
 
 https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-defer/
 
-### 9. select， *select是随机的还是顺序的？*
+### 9. select，select是随机的还是顺序的？
 
++ select中每个case必须是一个channel操作（读或写）
++ 当select中不含有任何case时，会阻塞当前goroutine
++ 当select中含有多个case时，并且没有default，这时会阻塞等待直到有case被触发，如果有多个case同时满足触发条件，那么select会**随机选取**一个case执行，其他的不执行。
++ 当select中含有多个case并且含有default语句时，如果没有case触发，那么就会执行default语句，如果有case触发则执行case。
++ 如果select中含有读取nil channel的case，则永远不会走这个case。
 
+参考：
+
+https://wudaijun.com/2017/10/go-select/
 
 ### 10. context
 

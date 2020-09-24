@@ -133,13 +133,23 @@ https://www.cnblogs.com/f-ck-need-u/p/7624733.html
 
 + poll
 
+  
+
 + epoll
+
+  
 
 + select、poll、epoll的区别
 
+  
+
 + epoll 的水平触发（LT）和边缘触发（ET）的区别
 
+  
+
 + nginx和redis所使用的IO模型是什么
+
+  IO多路复用
 
 
 

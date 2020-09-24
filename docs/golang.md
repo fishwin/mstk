@@ -492,7 +492,7 @@ https://learnku.com/articles/32142
 
 https://draveness.me/golang/docs/part3-runtime/ch06-concurrency/golang-channel/
 
-### 8. defer 
+### 11. defer 
 
 + 数据结构
 
@@ -659,7 +659,7 @@ https://sanyuesha.com/2017/07/23/go-defer/
 
 https://draveness.me/golang/docs/part2-foundation/ch05-keyword/golang-defer/
 
-### 9. select，select是随机的还是顺序的？
+### 12. select，select是随机的还是顺序的？
 
 + select中每个case必须是一个channel操作（读或写）
 + 当select中不含有任何case时，会阻塞当前goroutine

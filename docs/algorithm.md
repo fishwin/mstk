@@ -46,6 +46,24 @@
 
 
 
+### 13. 在2.5亿个整数中找出不重复的整数，注，内存不足以容纳这2.5亿个整数
+
+
+
+参考：
+
+https://wizardforcel.gitbooks.io/the-art-of-programming-by-july/content/06.07.html
+
+### 14. 给40亿个不重复的unsigned int的整数，没排过序的，然后再给一个数，如何快速判断这个数是否在那40亿个数当中？
+
+
+
+参考：
+
+https://wizardforcel.gitbooks.io/the-art-of-programming-by-july/content/06.07.html
+
+
+
 
 
 

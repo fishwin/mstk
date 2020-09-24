@@ -125,6 +125,22 @@ https://www.cnblogs.com/f-ck-need-u/p/7624733.html
 
 ### 7. IO多路复用，select、poll、epoll区别
 
++ IO多路复用是一种同步IO模型，一个线程监听多个IO事件，当有IO事件就绪时，就会通知线程去执行相应的读写操作，没有就绪事件时，就会阻塞交出cpu。多路是指网络链接，复用指的是复用同一线程。
+
++ select
+
+  
+
++ poll
+
++ epoll
+
++ select、poll、epoll的区别
+
++ epoll 的水平触发（LT）和边缘触发（ET）的区别
+
++ nginx和redis所使用的IO模型是什么
+
 
 
 参考：

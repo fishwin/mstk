@@ -276,7 +276,7 @@ https://www.cnblogs.com/f-ck-need-u/p/7624733.html
 + 应用场景
 
   1. 连接数较少并且都很活跃,用select和poll效率更高
-  2. 连接数较多并且都不很活跃,使用epoll效率更高
+  2. 连接数较多并且都不很活跃,使用epoll效率更高 
 
 参考：
 

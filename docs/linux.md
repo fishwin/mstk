@@ -294,9 +294,110 @@ https://blog.csdn.net/daaikuaichuan/article/details/83862311
 
 ### 9. 零拷贝
 
++ DMA (Direct Memory Access)  直接内存访问
 
+  负责数据搬运,解放CPU (CPU可以去处理别的事务,在DMA出现之前,数据搬运工作由CPU完成)
+
++ 传统文件传输过程
+
+  ![](../images/traditional_transfer.png)
+
+  1. 应用程序调用read系统调用函数,切换到内核空间,并向内核发起读文件的指令
+  2. 内核收到读指令后,接着向磁盘控制器发出读指令,然后通过DMA将数据拷贝到内核空间
+  3. 内核将文件数据再拷贝到用户空间,read函数返回,完成一次用户空间与内核空间的切换
+  4. 应用程序调用write系统调用函数,切换到内核空间,并将数据拷贝到内核的socket缓冲区中
+  5. write函数返回,完成一次用户空间与内核空间的切换
+  6. DMA将内核socket缓冲区中的数据拷贝到网卡中
+
+  + 总结
+    1. 上述过程共发生了4次用户空间与内核空间的切换,read和write系统调用的调用和返回都会发生一次切换
+    2. 共发生了4次数据拷贝,其中步骤2和6是DMA拷贝,步骤3和4是CPU拷贝
+    3. 数据没必要拷贝到用户空间,浪费性能
+
++ 使用mmap+write实现零拷贝
+
+  ![](../images/mmap_write.png)
+
+  1. 应用程序调用mmap系统调用函数,切换到内核空间,并向内核发起读文件指令
+  2. 内核向磁盘控制器发送读指令,DMA将文件数据拷贝到内核缓冲区中
+  3. mmap函数返回,切换回用户空间,并与用户空间共享内核缓冲区
+  4. 应用程序调用write()系统调用函数,切换到内核空间,并将内核缓冲区中的数据拷贝到内核socket缓冲区
+  5. write函数返回,切换回用户空间
+  6. DMA将数据拷贝到网卡
+
+  + 总结
+    1. 共发生了4次用户与内核空间的切换
+    2. 共发生了3次拷贝,其中步骤4为CPU拷贝,步骤2和6为DMA拷贝
+    3. 数据不会拷贝到用户空间,减少了一次CPU拷贝
+
++ sendfile实现零拷贝(linux 2.1版本)
+
+  + 函数原型
+
+    ```c
+    // out_fd  目的端
+    // in_fd 源端
+    // offset 源端的偏移
+    // count 源端需要复制数据的长度
+    ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count);
+    ```
+
+  + 执行过程
+
+    ![](/home/baldwin/workdir/go/src/mstk/images/sendfile2.1.png)
+
+    1. 应用程序调用sendfile系统调用函数,切换到内核空间,并向内核发起读文件指令
+    2. 内核收到读指令,向磁盘控制器发起读指令,DMA将数据拷贝到内核缓冲区中
+    3. 内核缓冲区中的数据被拷贝到内核socket缓冲区
+    4. sendfile函数返回,切换回用户空间
+    5. DMA将socket缓冲区中的数据拷贝到网卡
+
+    + 总结
+      1. 共发生2次用户与内核空间的切换
+      2. 共发生3次数据拷贝,其中步骤3为CPU拷贝,步骤2和5为DMA拷贝
+
+  + sendfile优化(linux 2.4版本)
+
+    + 前提
+
+      网卡支持SG-DMA技术
+
+    + 执行过程
+
+    ![](../images/sendfile2.png)
+
+    1. 应用程序调用sendfile系统函数调用,切换到内核空间,并向内核发送读指令
+    2. 内核收到读指令,向磁盘控制器发送读指令,DMA将数据拷贝到内核缓冲区中
+    3. 将内核缓冲区关于**数据位置和长度的描述符**传到内核socket缓冲区
+    4. sendfile函数返回,切换回用户空间
+    5. SG-DMA将内核缓冲区中数据拷贝到网卡
+
+    + 总结
+      1. 共发生2次用户与内核空间的切换
+      2. 共发生2次数据拷贝,并且都是DMA拷贝,无CPU拷贝
+
+  + 哪些项目使用了零拷贝技术
+
+    + kafka
+
+    + nginx
+
+      ```nginx
+      http {
+      ...
+          sendfile on  // 默认开启
+      ...
+      }
+      ```
+
+  + 注意
+
+    + 传输大文件,使用异步IO+直接IO
+    + 传输小文件,使用零拷贝技术
 
 参考：
+
+https://www.cnblogs.com/xiaolincoding/p/13719610.html
 
 https://blog.biezhi.me/2019/01/zero-copy-user-mode-perspective.html
 

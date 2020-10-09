@@ -1,8 +1,67 @@
-### 1. tcp与udp区别，udp优点，适用场景
+### 1. TCP定义
 
+TCP是面向连接的、可靠的、基于字节流的传输层通信协议 。
 
+### 2. 什么是TCP连接
 
-### 2. Tcp 三次握手过程及中间状态
+用于保证可靠性和流量控制的某些状态信息的组合，包括socket、序列号、窗口大小等
+
+### 3. TCP与UDP区别，UDP优点，适用场景
+
++ 区别
+
+  + 连接
+
+    TCP是面向连接的传输层协议，通信之前需要建立连接
+
+    UDP传输时不需要建立连接
+
+  + 服务对象
+
+    TCP只能一对一通信
+
+    UDP支持一对一、一对多、多对多
+
+  + 可靠性
+
+    TCP保证数据传输的可靠性
+
+    UDP不保证传输的可靠性
+
+  + 拥塞控制、流量控制
+
+    TCP有拥塞控制和流量控制的机制
+
+    UDP没有
+
+  + 首部开销
+
+    TCP首部20个字节（不使用选项字段20字节、使用时更长），UDP首部只有8个字节，长度固定
+
++ 应用案例
+
+  + TCP
+    + FTP文件传输
+    + HTTP/HTTPS
+  + UDP
+    + DNS
+    + 视频、音频等多媒体通信
+
+参考：
+
+https://www.cnblogs.com/xiaolincoding/p/12638546.html
+
+### 4. Linux查看TCP连接状态
+
++ 命令
+
+  netstat -napt
+
++ 图
+
+  <img src="../images/netstat.png"  />
+
+### 2. TCP 三次握手过程及中间状态
 
 + 执行流程图
 
@@ -13,6 +72,10 @@
     + 服务端收到连接请求后向客户端发送SYN=1（同步位），ACK=1（确认位），seq=y（序号），ack=x+1（确认号）,并进入SYN_RECV状态（TCP规定SYN=1且ACK=1的报文段为同意建立链接的响应报文，不能携带数据）
     + 客户端收到响应报文后，向服务端回复确认ACK=1（确认位），seq=x+1（序号），ack=y+1（确认号），客户端进入ESTABLISHED状态（这个ACK报文可以携带数据，如果不携带数据则不消耗序号）
     + 服务端进入ESTABLISHED状态
+
+参考：
+
+https://www.cnblogs.com/xiaolincoding/p/12638546.html
 
 ### 3. TCP为什么需要三次握手
 
@@ -27,6 +90,12 @@
   + 对数据包进行**去重**
   + 超时**重传**（ack=n表示前n个数据包已接收成功）
   + 接收方对数据包进行**排序**
+
+参考：
+
+https://www.cnblogs.com/xiaolincoding/p/12638546.html
+
+https://segmentfault.com/a/1190000020610336
 
 ### 4. TCP半连接队列
 
@@ -61,6 +130,10 @@
     + 服务端收到之后进入到CLOSED状态
     + 客户端等待2MSL（MSL表示最大报文生存时间，任何报文超过这个时间都会被丢弃）后也进入到CLOSED状态
 
+参考：
+
+https://blog.csdn.net/qzcsu/article/details/72861891
+
 ### 5. 为什么TCP断开链接需要4次挥手
 
 
@@ -73,7 +146,8 @@
 
 ### 7. TIME_WAIT原因，为什么要等待2MSL
 
-
++ 为了保证客户端发给服务端的最后一个ACK报文到达服务端，如果服务端没收到的话，会重传FIN包，这时客户端需要重新发送ACK包。否则，如果ACK包丢失的话，服务端无法进入CLOSED状态。**TIME_WAIT状态就是用来重传可能丢失的ACK包**
++ 使本链接中产生的所有的请求报文从网络中消失（MSL为最大报文生存时间），防止在新连接中再出现这些旧报文
 
 ### 7. 单点登录，tcp粘包
 
@@ -91,13 +165,70 @@
 
 
 
-### 9. udp的头部
+### 9. UDP头部
+
++ 示意图
+
+  ![](../images/udp_header.png)
+
+  + 数据字典
+
+    + 目标和源端口：标识进程
+    + 包长度：UDP头部和数据的长度之和
+    + 校验和：提供可靠的UDP头部和数据
+
+  + 代码定义
+
+    ```c
+    /*UDP头定义，共8个字节*/
+    
+    typedef struct _UDP_HEADER 
+    {
+     unsigned short m_usSourPort;    　　　// 源端口号16bit
+     unsigned short m_usDestPort;    　　　// 目的端口号16bit
+     unsigned short m_usLength;    　　　　// 数据包长度16bit
+     unsigned short m_usCheckSum;    　　// 校验和16bit
+    }__attribute__((packed))UDP_HEADER, *PUDP_HEADER;
+    ```
+
+### 10. TCP头部
+
++ 示意图
+
+  <img src="../images/tcp_header.png"  />
+
+  + 词典
+
+    + 序列号：随机生成，用来解决包重复、乱序、重传等问题
+    + 确认应答号：解决不丢包的问题
+    + 控制位
+      + ACK：确认应答，该位为1时，确认应答号字段有效
+      + RST：该位为1时，表示TCP连接异常必须强制断开连接
+      + SYN：该位为1时，表示希望建立连接，并完成序列号的初始化
+      + FIN：该位为1时，表示希望断开连接
+
+  + 代码定义
+
+    ```c
+    /*TCP头定义，共20个字节*/
+    typedef struct _TCP_HEADER 
+    {
+     short m_sSourPort;        　　　　　　// 源端口号16bit
+     short m_sDestPort;       　　　　　　 // 目的端口号16bit
+     unsigned int m_uiSequNum;       　　// 序列号32bit
+     unsigned int m_uiAcknowledgeNum;  // 确认号32bit
+     short m_sHeaderLenAndFlag;      　　// 前4位：TCP头长度；中6位：保留；后6位：标志位
+     short m_sWindowSize;       　　　　　// 窗口大小16bit
+     short m_sCheckSum;        　　　　　 // 检验和16bit
+     short m_surgentPointer;      　　　　 // 紧急数据偏移量16bit
+    }__attribute__((packed))TCP_HEADER, *PTCP_HEADER;
+    ```
 
 
 
-### 10. tcp的头部
+### 11. 为什么UDP头部结构没有首部长度，而TCP头部有首部长度字段
 
-
+因为TCP头部中有选项字段，头部大小不固定，而UDP头部大小是固定的
 
 ### 11. tcp为什么是可靠的传输，怎么保证的
 
@@ -147,17 +278,56 @@
 
 
 
-### 23. 服务器最大连接数？TCP四元组
+### 23. 服务器最大连接数？
 
+多个客户端连接到服务器只消耗服务器一个端口，即监听的端口。同一个客户端向服务器建立多个连接，会消耗客户端所在机器多个随机端口。
 
+理论上服务器最大连接数非常大，但是每一个TCP连接会占用内存，服务器的内存有限，每个socket还会消耗一个文件描述符，也是有上限的。
 
 ### 24. TLS/SSL协议如何保证信息安全
 
 
 
+### 25. TCP四元组
+
+TCP四元组包括源地址、源端口、目的地址、目的端口
+
+![](../images/tcp_four.png)
+
+源地址和目标地址的字段在IP头部
+
+源端口和目标端口的字段在TCP头部
 
 
 
+### 26. IP头部
+
++ 示意图
+
+![](../images/ip_header.png)
+
++ 代码定义
+
+  ```c
+  /*IP头定义，共20个字节*/
+  typedef struct _IP_HEADER 
+  {
+   char m_cVersionAndHeaderLen;     　　//版本信息(前4位)，头长度(后4位)
+   char m_cTypeOfService;      　　　　　 // 服务类型8位
+   short m_sTotalLenOfPacket;    　　　　//数据包长度
+   short m_sPacketID;      　　　　　　　 //数据包标识
+   short m_sSliceinfo;      　　　　　　　  //分片使用
+   char m_cTTL;        　　　　　　　　　　//存活时间
+   char m_cTypeOfProtocol;    　　　　　 //协议类型
+   short m_sCheckSum;      　　　　　　 //校验和
+   unsigned int m_uiSourIp;     　　　　　//源ip
+   unsigned int m_uiDestIp;     　　　　　//目的ip
+  } __attribute__((packed))IP_HEADER, *PIP_HEADER ;
+  ```
+
+参考
+
+https://blog.csdn.net/mrwangwang/article/details/8537775
 
 
 

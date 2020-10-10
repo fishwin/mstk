@@ -170,11 +170,13 @@ B+树结构：
 
   ![](../images/abcfilesort.png)
 
-+ (a,c,b)联合索引无filesort
++ (a,c,b)联合索引无filesort，但b无法使用索引（如果target_id用上索引，rows应为51，由于sql执行顺序）
 
   ![](../images/acbfilesort.png)
 
++ 所以结论是：建立(a,c)联合索引为最优解
 
+  ![](../images/acfilesort.png)
 
 
 

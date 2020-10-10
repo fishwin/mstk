@@ -160,7 +160,19 @@ B+树结构：
 
 
 
+### 27. where a=1  and b<2 order by c desc 如何建索引
 
++ (a,b)联合索引会触发filesort
+
+  ![](../images/abfilesort.png)
+
++ (a,b,c)联合索引会触发filesort
+
+  ![](../images/abcfilesort.png)
+
++ (a,c,b)联合索引无filesort
+
+  ![](../images/acbfilesort.png)
 
 
 

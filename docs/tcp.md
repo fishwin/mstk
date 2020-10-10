@@ -136,9 +136,7 @@ https://blog.csdn.net/qzcsu/article/details/72861891
 
 ### 11. 为什么TCP断开链接需要4次挥手
 
-
-
-
+因为TCP连接是**全双工**的，两个方向都需要单独关闭。
 
 ### 12. CLOSE_WAIT原因
 
@@ -160,7 +158,7 @@ https://blog.csdn.net/qzcsu/article/details/72861891
 
 ### 16. 滑动窗口
 
-
+https://www.cnblogs.com/xiaolincoding/p/12732052.html
 
 ### 17. 出现很多TIME_WAIT为什么？
 

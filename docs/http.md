@@ -196,7 +196,7 @@
   | Last-Modified               | 所请求的对象的最后修改日期                                   | Last-Modified: Dec, 26 Dec 2015 17:30:00 GMT       |
   | Location                    | 用于在进行重定向，或在创建了某个新资源时使用。               | Location: http://www.itbilu.com/nodejs             |
   | Server                      | 服务器的名称                                                 | Server: nginx/1.6.3                                |
-  | Set-Cookie                  | 设置cookie                                                   | Set-Cookie: UserID=itbilu; Max-Age=3600; Version=1 |
+  | **Set-Cookie**              | 设置cookie                                                   | Set-Cookie: UserID=itbilu; Max-Age=3600; Version=1 |
   | Status                      | 通用网关接口的响应头字段，用来说明当前HTTP连接的响应状态。   | Status: 200 OK                                     |
   | Transfer-Encoding           | 表示实体传输给用户的编码形式。包括：`chunked`、`compress`、 `deflate`、`gzip`、`identity`。 | Transfer-Encoding: chunked                         |
   | Upgrade                     | 要求客户端升级到另一个高版本协议。                           | Upgrade: HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11     |

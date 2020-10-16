@@ -158,9 +158,51 @@
 
 ### 4. 常见http header
 
++ 常见的http请求头
 
+  | 协议头          | 说明                                                         | 示例                                              |
+  | --------------- | ------------------------------------------------------------ | ------------------------------------------------- |
+  | Accept          | 可接受的响应内容类型（Content-Types）                        | Accept:text/plain                                 |
+  | Accept-Charset  | 可接受的字符集                                               | Accept-Charset:utf-8                              |
+  | Accept-Encoding | 可接受的响应内容编码方式                                     | Accept-Encoding: gzip, deflate                    |
+  | Accept-Language | 可接受的响应内容的语言列表                                   | Accept-Language: en-US                            |
+  | Authorization   | 认证信息                                                     | Authorization: Basic OSdjJGRpbjpvcGVuIANlc2SdDE== |
+  | Cache-Control   | 是否使用缓存机制                                             | Cache-Control: no-cache                           |
+  | Connection      | 客户端（浏览器）想要优先使用的连接类型                       | Connection: keep-alive Connection: Upgrade        |
+  | Cookie          | 由之前服务器设置的一个Cookie                                 | Cookie: $Version=1; Skin=new;                     |
+  | Content-Length  | 以8进制表示的请求体的长度                                    | Content-Length: 348                               |
+  | Content-Type    | 请求体的MIME类型，用于POST和PUT                              | Content-Type: application/x-www-form-urlencoded   |
+  | Date            | 日期时间                                                     | Date: Dec, 26 Dec 2015 17:30:00 GMT               |
+  | Host            | 服务器域名                                                   | Host: www.itbilu.com:80 Host: www.itbilu.com      |
+  | Origin          | 发起一个针对[跨域资源共享](http://itbilu.com/javascript/js/VkiXuUcC.html)的请求 | Origin: http://www.itbilu.com                     |
+  | Referer         | 表示浏览器所访问的前一个页面                                 | Referer: http://itbilu.com/nodejs                 |
+  | User-Agent      | 浏览器的身份标识字符串                                       | User-Agent: Mozilla/……                            |
+  | Upgrade         | 要求服务器升级到一个高版本协议。                             | Upgrade: HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11    |
 
++ 常见的http响应头
 
+  | 响应头                      | 说明                                                         | 示例                                               |
+  | --------------------------- | ------------------------------------------------------------ | -------------------------------------------------- |
+  | Access-Control-Allow-Origin | 指定哪些网站可以跨域源资源共享                               | Access-Control-Allow-Origin: *                     |
+  | Age                         | 响应对象在代理缓存中存在的时间，以秒为单位                   | Age: 12                                            |
+  | Allow                       | 对于特定资源的有效动作;                                      | Allow: GET, HEAD                                   |
+  | Cache-Control               | 缓存相关                                                     | Cache-Control: max-age=3600                        |
+  | Connection                  | 针对该连接所预期的选项                                       | Connection: close                                  |
+  | Content-Encoding            | 响应资源所使用的编码类型                                     | Content-Encoding: gzip                             |
+  | Content-Language            | 响就内容所使用的语言                                         | Content-Language: zh-cn                            |
+  | Content-Length              | 响应消息体的长度，用8进制字节表示                            | Content-Length: 348                                |
+  | Content-Type                | 当前内容的`MIME`类型                                         | Content-Type: text/html; charset=utf-8             |
+  | Date                        | 此条消息被发送时的日期和时间                                 | Date: Tue, 15 Nov 1994 08:12:31 GMT                |
+  | Last-Modified               | 所请求的对象的最后修改日期                                   | Last-Modified: Dec, 26 Dec 2015 17:30:00 GMT       |
+  | Location                    | 用于在进行重定向，或在创建了某个新资源时使用。               | Location: http://www.itbilu.com/nodejs             |
+  | Server                      | 服务器的名称                                                 | Server: nginx/1.6.3                                |
+  | Set-Cookie                  | 设置cookie                                                   | Set-Cookie: UserID=itbilu; Max-Age=3600; Version=1 |
+  | Status                      | 通用网关接口的响应头字段，用来说明当前HTTP连接的响应状态。   | Status: 200 OK                                     |
+  | Transfer-Encoding           | 表示实体传输给用户的编码形式。包括：`chunked`、`compress`、 `deflate`、`gzip`、`identity`。 | Transfer-Encoding: chunked                         |
+  | Upgrade                     | 要求客户端升级到另一个高版本协议。                           | Upgrade: HTTP/2.0, SHTTP/1.3, IRC/6.9, RTA/x11     |
+  | WWW-Authenticate            | 表示在请求获取这个实体时应当使用的认证模式。                 | WWW-Authenticate: Basic                            |
+
+  
 
 ### 2. https 原理及握手过程
 

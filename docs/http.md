@@ -46,6 +46,10 @@
 
     表示客户端请求的报文有错误,是一个笼统的错误
 
+  + 401 Unauthorized
+
+    请求未经授权
+
   + 403 forbidden
 
     服务器禁止客户端访问相应的资源
@@ -77,6 +81,86 @@
 + 参考
 
   https://www.cnblogs.com/xiaolincoding/p/12442435.html
+
+
+
+### 2. 301与302有何区别，应用上有什么异同？
+
+
+
+### 3. http请求与响应协议格式
+
++ HTTP请求（Request）格式
+
+  请求行
+
+  请求头
+
+  空行
+
+  请求体
+
+  + get请求示例
+
+  ```http
+  GET请求：
+  GET /562f25980001b1b106000338.jpg HTTP/1.1
+  Host    img.mukewang.com
+  User-Agent  Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.106 Safari/537.36
+  Accept  image/webp,image/*,*/*;q=0.8
+  Referer http://www.imooc.com/
+  Accept-Encoding gzip, deflate, sdch
+  Accept-Language zh-CN,zh;q=0.8
+   
+   
+  ```
+
+  + post请求示例
+
+    ```http
+    POST请求：
+    POST / HTTP1.1
+    Host:www.wrox.com
+    User-Agent:Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 2.0.50727; .NET CLR 3.0.04506.648; .NET CLR 3.5.21022)
+    Content-Type:application/x-www-form-urlencoded
+    Content-Length:40
+    Connection: Keep-Alive
+     
+    name=Professional%20Ajax&publisher=Wiley
+    ```
+
++ HTTP响应（Response）格式
+
+  响应行
+
+  响应头
+
+  空行
+
+  响应体
+
+  + 示例
+
+    ```http
+    HTTP/1.1 200 OK
+    Date: Fri, 22 May 2009 06:07:21 GMT
+    Content-Type: text/html; charset=UTF-8
+     
+    <html>
+          <head></head>
+          <body>
+                <!--body goes here-->
+          </body>
+    </html>
+    ```
+
+
+
+### 4. 常见http header
+
+
+
+
 
 ### 2. https 原理及握手过程
 
@@ -115,10 +199,6 @@
 
 
 ### 11. get和post请求的区别？
-
-
-
-### 12. 301/302有什么区别？应用上有什么异同。
 
 
 

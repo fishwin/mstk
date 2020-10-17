@@ -206,7 +206,39 @@
 
 ### 2. https 原理及握手过程
 
++ 原理
 
+  <img src="../images/https.png" style="zoom:80%;" />
+
+  https本质是在原http与tcp之间加入了SSL/TLS协议
+
+  https = http + ssl/tls
+
++ https七次握手过程
+
+  1. 客户端向服务端发送SYN消息，并进入SYN_SENT状态
+  2. 服务端收到SYN报文后，回复SYN+ACK报文，并进入SYN_RECV状态
+  3. 客户端回复ACK，双方进入ESTABLISHED状态，建立TCP连接
+  4. 客户端向服务端发送Client Hello消息，并携带客户端支持的协议版本号、加密算法、**随机数**（32位）等信息。
+  5. 服务端收到之后，向客户端发送Server Hello消息，并携带**证书**（包含公钥等信息）、服务端生成的**随机数**、会话ID、协议版本等信息。
+  6. 客户端收到服务端消息后，验证证书，向服务端发送**Client key exchange**消息，客户端再生成一个随机数，并使用服务端传过来的证书公钥对其进行加密作为**预主密钥**（pre master key），并通知服务端之后加密传输，并发送**finished消息**。
+  7. 服务端收到消息之后，回复**finished消息**，并通知客户端之后数据加密传输
+
+  ![](../images/tls.png)
+
+  注意：主密钥由双方产生的随机数和预主密钥生成
+
+  ```c
+  master_secret = PRF(pre_master_secret,"master secret",ClientHello.random+ServerHello.random)
+  ```
+
++ 参考
+
+  https://draveness.me/whys-the-design-https-latency/
+
+  https://razeencheng.com/post/ssl-handshake-detail
+
+  https://segmentfault.com/a/1190000021494676
 
 ### 3. http keep-alive
 

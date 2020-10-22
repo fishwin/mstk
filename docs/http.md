@@ -298,7 +298,62 @@
 
 ### 19. 浏览器缓存
 
++ 强缓存：浏览器直接从内存或磁盘中读取缓存数据，不与服务器交互
 
+  + 相关header
+
+    + Expires（http1.0）
+
+      设置缓存失效时间（绝对时间，当客户端与服务端时间不一致，并且相差很大时，缓存失效时间不准确）
+
+    + Cache-Control（http1.1，优先级高于Expires）
+
+      + max-age：设置缓存过期时间，单位秒，例如max-age=300
+      + no-cache：每次需要进行缓存协商，向服务器验证缓存是否可用。（注意，no-cache会缓存，只是每次需要向服务器验证缓存是否可用）
+      + no-store：禁止缓存
+      + 等等
+
+  + 状态码
+
+    + 200 OK (from disk cache)
+    + 200 OK (from memory cache)
+
++ 协商缓存：当强缓存失效后，浏览器携带缓存标识询问服务器缓存是否可用的过程
+
+  + 相关header
+
+    + Last-Modified
+
+      服务器在给浏览器下发资源时，会携带Last-Modified，表示资源最后修改时间
+
+    + If-Modified-Since
+
+      在本地缓存失效后，浏览器向服务器进行缓存协商，确认缓存是否可用，携带If-Modified-Since，值为Last-Modified的值，表示在此时间后资源是否被修改过。如果没修改过，则返回304，浏览器使用缓存，否则，从服务器重新加载资源
+
+    + Etag
+
+      服务器在给浏览器下发资源时，会携带Etag，表示当前资源在服务器的唯一标识
+
+    + If-None-Match
+
+      在本地缓存失效后，浏览器向服务器进行缓存协商，确认缓存是否可用，携带ETag，服务器在收到之后，会对资源重新计算ETag，如果与浏览器传过来的Etag一致，则说明资源没有被修改过，返回304，浏览器使用缓存，否则，从服务器重新加载资源。
+
+    + Last-Modified与If-Modified-Since一起使用。Etag与If-None-Match一起使用
+
+  + 为什么有了Last-Modified与If-Modified-Since，还要出现Etag与If-None-Match？
+
+    + **Last-Modified与If-Modified-Since不够灵敏**：因为If-Modified-Since是以秒为单位，如果某个文件在1秒内被修改多次，它是检测不到的，而ETag可以检测到
+
++ 比较
+
+  | 类别     | 获取资源形式 | 状态码                                   | 与服务器交互                     |
+  | -------- | ------------ | ---------------------------------------- | -------------------------------- |
+  | 强缓存   | 读缓存       | 200（from memory cache/from disk cache） | 否                               |
+  | 协商缓存 | 读缓存       | 304（not modified）                      | 是，需要向服务器确认缓存是否可用 |
+
++ 流程图
+
+  ![](../images/browser_cahce.png)
 
 ### 20. http2.0与http3.0
 

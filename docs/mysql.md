@@ -190,3 +190,13 @@ B+树结构：
 
 ### 30. 事务执行不完，会不会写binlog
 
+
+
+### 31. 什么是全文索引
+
++ 全文索引（Full Text Index）就是**关键字搜索**
+
++ 举例
+
+  比如有一个文章表contents，其中有id，content，create_time等字段，对content字段建立全文索引，然后使用SELECT * FROM contents WHERE **MATCH**(content) **AGAINST**('哈哈')。就是在查找content中含有“哈哈”关键字的行。
+

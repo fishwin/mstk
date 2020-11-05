@@ -102,7 +102,33 @@
 
 ### 10. 一致性hash算法原理与应用
 
++ 应用场景
 
+  分布式redis集群中，如果利用一般hash算法，增删节点都会造成大量缓存失效，为了解决这一问题，可使用一致性hash算法，减少因为增删节点而带来的缓存失效的情况。
+
++ 原理：
+
+  首先构造一个hash环空间，值域为[0,2^32-1]，然后以redis每个节点的ip或者名字，利用函数H(x)计算一个hash值，落在环上不同位置。当有查询缓存的请求时，则将key使用相同的函数H(x)对key进行计算一个hash值，落在环上，然后沿环**顺时针**查找第一个redis节点，则key的值应存储在这个节点上，即可读写值。
+
+  如下图，A数据落在server1上，D数据落在server3上，B、C落在server2上，如果删除server3，则受影响的只有D数据，其他数据不受影响，如果在B和C之间增加server4，则受影响的只有B，其他数据不受影响。
+
+  
+
+  ![](../images/yzxhash.png)
+
++ 数据倾斜问题（数据在各个redis节点上分布不均匀）
+
+  + 如果共有两个redis节点，并且计算出的hash值比较接近，那么根据一致性hash算法，大部分数据会落到一个节点上，数据就会在两个节点上分布不均。
+
+    ![](../images/yzxhashqingxie.png)
+
+  + 为了解决以上问题，通常会为同一个节点计算多个hash值(32或者更大)，作为虚拟节点，落在环上，以使数据尽可能的分布均匀。比如，可对name+编号，然后进行hash计算（redis server #1,redis server #2,redis server #3...）
+
+    ![](../images/yzxhashxuni.png)
+
++ 参考
+
+  https://blog.codinglabs.org/articles/consistent-hashing.html
 
 ### 11. 分布式raft算法
 

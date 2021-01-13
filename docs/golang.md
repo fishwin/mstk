@@ -779,6 +779,10 @@ https://wudaijun.com/2017/10/go-select/
 
 
 
+### 33. effective golang
+
+http://devs.cloudimmunity.com/gotchas-and-common-mistakes-in-go-golang/index.html
+
 
 
 
